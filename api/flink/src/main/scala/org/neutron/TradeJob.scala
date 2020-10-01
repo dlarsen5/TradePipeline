@@ -60,11 +60,11 @@ object TradeJob {
     env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime)
 
     val kafkaProperties = new Properties()
-    kafkaProperties.setProperty("bootstrap.servers", "localhost:9092")
+    kafkaProperties.setProperty("bootstrap.servers", "kafka:9092")
     kafkaProperties.setProperty("group.id", "flinkstocks")
 
     val topicProps = new Properties()
-    topicProps.setProperty("bootstrap.servers", "localhost:9092")
+    topicProps.setProperty("bootstrap.servers", "kafka:9092")
     topicProps.setProperty("group.id", "flinkstocks")
     topicProps.setProperty("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
     topicProps.setProperty("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
@@ -88,7 +88,7 @@ object TradeJob {
           val gson = new Gson()
           gson.toJson(t).getBytes()
         }
-        override def getTargetTopic(t: RiskQuote): String = "quote-" + t.symbol
+        override def getTargetTopic(t: RiskQuote): String = "agg-" + t.symbol
       },
       kafkaProperties)
 
@@ -98,7 +98,7 @@ object TradeJob {
       .map(r => {
         val symbol = r.get("metadata").get("topic").textValue()
         val obj = r.get("value")
-        val timestamp = obj.get(0).asDouble // TODO asBigInt
+        val timestamp = obj.get(0).asDouble
         val price = obj.get(1).asDouble
         val size = obj.get(2).asInt
         val dollar = price * size
@@ -113,6 +113,6 @@ object TradeJob {
     riskquotes.addSink(riskProducer)
 
 
-    env.execute("Flink Finance Processor")
+    env.execute("Flink Trade Processor")
   }
 }

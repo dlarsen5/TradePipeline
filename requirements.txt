@@ -1,0 +1,4 @@
+alpaca_trade_api
+empyrical
+kafka-python
+python-dotenv
